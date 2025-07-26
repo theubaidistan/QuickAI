@@ -1,7 +1,6 @@
 import logo from "./logo.svg";
 import gradientBackground from "./gradientBackground.png";
 import user_group from "./user_group.png";
-// import user_group from "./usergroup.html?raw";
 import star_icon from "./star_icon.svg";
 import star_dull_icon from "./star_dull_icon.svg";
 import profile_img_1 from "./profile_img_1.png";
