@@ -37,7 +37,8 @@ export const generateArticle = async (req, res) => {
         },
       ],
       temperature: 0.7,
-      max_tokens: length,
+      // max_tokens: length,
+      max_output_tokens: Number(length) || 1000,
     });
 
     const content = response.choices[0].message.content;
