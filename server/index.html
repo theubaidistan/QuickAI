@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Backend Server — Listening</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;700;800&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0a0e14;
+      --surface: #111720;
+      --surface2: #161e2c;
+      --border: rgba(99, 211, 155, 0.15);
+      --green: #63d39b;
+      --green-dim: rgba(99, 211, 155, 0.08);
+      --green-glow: rgba(99, 211, 155, 0.25);
+      --amber: #f0c060;
+      --amber-dim: rgba(240, 192, 96, 0.08);
+      --blue: #5ab4f5;
+      --blue-dim: rgba(90, 180, 245, 0.08);
+      --coral: #f07060;
+      --text: #e8f0ea;
+      --text-dim: #7a9080;
+      --text-muted: #4a5e52;
+      --mono: 'JetBrains Mono', monospace;
+      --display: 'Syne', sans-serif;
+    }
+
+    html,
+    body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: linear-gradient(rgba(99, 211, 155, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(99, 211, 155, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 1.5rem 2rem;
+    }
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 48px;
+      background: rgba(10, 14, 20, 0.9);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      z-index: 100;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+    }
+
+    .topbar-left .brand {
+      color: var(--green);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    .uptime-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--green-dim);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3px 10px;
+      font-size: 11px;
+      color: var(--green);
+    }
+
+    .main-card {
+      width: 100%;
+      max-width: 760px;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 3.5rem 2rem 2.5rem;
+      border: 1px solid var(--border);
+      border-radius: 12px 12px 0 0;
+      background: var(--surface);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 400px;
+      height: 200px;
+      background: radial-gradient(ellipse, rgba(99, 211, 155, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .status-orb {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 80px;
+      height: 80px;
+      margin-bottom: 1.5rem;
+    }
+
+    .orb-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid var(--green);
+      opacity: 0.3;
+      animation: pulse-ring 2s ease-out infinite;
+    }
+
+    .orb-ring:nth-child(2) {
+      animation-delay: 0.6s;
+    }
+
+    .orb-ring:nth-child(3) {
+      animation-delay: 1.2s;
+    }
+
+    .orb-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: orb-breathe 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse-ring {
+      0% {
+        transform: scale(1);
+        opacity: 0.3;
+      }
+
+      100% {
+        transform: scale(2.2);
+        opacity: 0;
+      }
+    }
+
+    @keyframes orb-breathe {
+
+      0%,
+      100% {
+        box-shadow: 0 0 20px var(--green-glow);
+      }
+
+      50% {
+        box-shadow: 0 0 36px rgba(99, 211, 155, 0.5);
+      }
+    }
+
+    .hero-label {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 0.5rem;
+    }
+
+    .hero-title {
+      font-family: var(--display);
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.6rem;
+    }
+
+    .hero-title span {
+      color: var(--green);
+    }
+
+    .hero-sub {
+      font-size: 12px;
+      color: var(--text-dim);
+      letter-spacing: 0.03em;
+    }
+
+    .info-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+
+    .info-cell {
+      padding: 1.2rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      background: var(--surface2);
+    }
+
+    .info-cell:last-child {
+      border-right: none;
+    }
+
+    .info-cell .label {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .info-cell .value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .info-cell .value.green {
+      color: var(--green);
+    }
+
+    .info-cell .value.blue {
+      color: var(--blue);
+    }
+
+    .terminal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 12px 12px;
+      overflow: hidden;
+    }
+
+    .terminal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: rgba(99, 211, 155, 0.04);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .terminal-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .terminal-dots span {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .terminal-dots span:nth-child(1) {
+      background: var(--coral);
+    }
+
+    .terminal-dots span:nth-child(2) {
+      background: var(--amber);
+    }
+
+    .terminal-dots span:nth-child(3) {
+      background: var(--green);
+    }
+
+    .terminal-title {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+    }
+
+    .terminal-tag {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 3px;
+      background: var(--green-dim);
+      color: var(--green);
+      letter-spacing: 0.06em;
+    }
+
+    .log-area {
+      padding: 1.2rem 1.5rem;
+      min-height: 200px;
+      max-height: 260px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .log-area::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .log-area::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 2px;
+    }
+
+    .log-line {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      font-size: 12px;
+      line-height: 1.6;
+      opacity: 0;
+      animation: log-in 0.3s ease forwards;
+    }
+
+    @keyframes log-in {
+      from {
+        opacity: 0;
+        transform: translateX(-4px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .log-time {
+      color: var(--text-muted);
+      min-width: 80px;
+      font-size: 11px;
+    }
+
+    .log-level {
+      min-width: 52px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+    }
+
+    .log-level.info {
+      color: var(--blue);
+    }
+
+    .log-level.success {
+      color: var(--green);
+    }
+
+    .log-level.warn {
+      color: var(--amber);
+    }
+
+    .log-msg {
+      color: var(--text-dim);
+      flex: 1;
+    }
+
+    .log-msg .hl {
+      color: var(--text);
+    }
+
+    .log-msg .port {
+      color: var(--green);
+    }
+
+    .log-msg .url {
+      color: var(--blue);
+    }
+
+    .routes-panel {
+      margin-top: 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--surface);
+    }
+
+    .routes-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+
+    .routes-header h3 {
+      font-family: var(--display);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--text);
+    }
+
+    .route-count {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .route-row {
+      display: grid;
+      grid-template-columns: 70px 200px 1fr 80px;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(99, 211, 155, 0.06);
+      font-size: 12px;
+      transition: background 0.15s;
+    }
+
+    .route-row:last-child {
+      border-bottom: none;
+    }
+
+    .route-row:hover {
+      background: rgba(99, 211, 155, 0.03);
+    }
+
+    .method {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 2px 7px;
+      border-radius: 3px;
+      text-align: center;
+    }
+
+    .method.GET {
+      background: var(--blue-dim);
+      color: var(--blue);
+      border: 1px solid rgba(90, 180, 245, 0.2);
+    }
+
+    .method.POST {
+      background: var(--green-dim);
+      color: var(--green);
+      border: 1px solid var(--border);
+    }
+
+    .method.PUT {
+      background: var(--amber-dim);
+      color: var(--amber);
+      border: 1px solid rgba(240, 192, 96, 0.2);
+    }
+
+    .method.DEL {
+      background: rgba(240, 112, 96, 0.07);
+      color: var(--coral);
+      border: 1px solid rgba(240, 112, 96, 0.2);
+    }
+
+    .route-path {
+      color: var(--text);
+    }
+
+    .route-desc {
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+
+    .route-status {
+      text-align: right;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+    }
+
+    .route-status.ok {
+      color: var(--green);
+    }
+
+    .route-status.mid {
+      color: var(--amber);
+    }
+
+    .ping-bar {
+      margin-top: 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .ping-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .ping-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .ping-icon.green {
+      background: var(--green-dim);
+    }
+
+    .ping-icon.blue {
+      background: var(--blue-dim);
+    }
+
+    .ping-icon.amber {
+      background: var(--amber-dim);
+    }
+
+    .ping-info .name {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+      letter-spacing: 0.06em;
+    }
+
+    .ping-info .val {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 7px;
+      height: 13px;
+      background: var(--green);
+      margin-left: 4px;
+      animation: blink 1s step-end infinite;
+      vertical-align: middle;
+      border-radius: 1px;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0
+      }
+    }
+
+    .footer {
+      margin-top: 2.5rem;
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+    }
+
+    .footer a {
+      color: var(--green);
+      text-decoration: none;
+    }
+
+    @media (max-width: 600px) {
+      .info-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .info-cell {
+        border-right: none;
+      }
+
+      .route-row {
+        grid-template-columns: 60px 140px 1fr;
+      }
+
+      .route-status {
+        display: none;
+      }
+
+      .ping-bar {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar-right {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="brand">NODE/SERVER</span>
+      <span style="color:var(--text-muted)">·</span>
+      <span>v1.0.0</span>
+    </div>
+    <div class="topbar-right">
+      <span>ENV: <span style="color:var(--amber)">development</span></span>
+      <div class="uptime-badge">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;"></span>
+        ONLINE · <span id="uptime-text">0s</span>
+      </div>
+    </div>
+  </div>
+
+  <main class="page">
+    <div class="main-card">
+      <div class="hero">
+        <div class="status-orb">
+          <div class="orb-ring"></div>
+          <div class="orb-ring"></div>
+          <div class="orb-ring"></div>
+          <div class="orb-dot"></div>
+        </div>
+        <p class="hero-label">● Server Status</p>
+        <h1 class="hero-title">Server is <span>Listening</span></h1>
+        <p class="hero-sub">Backend process active &amp; accepting connections on all interfaces</p>
+      </div>
+
+      <div class="info-strip">
+        <div class="info-cell">
+          <div class="label">Host</div>
+          <div class="value">localhost</div>
+        </div>
+        <div class="info-cell">
+          <div class="label">Port</div>
+          <div class="value green">3000</div>
+        </div>
+        <div class="info-cell">
+          <div class="label">Protocol</div>
+          <div class="value blue">HTTP/1.1</div>
+        </div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-header">
+          <div class="terminal-dots"><span></span><span></span><span></span></div>
+          <span class="terminal-title">server.log</span>
+          <span class="terminal-tag">LIVE</span>
+        </div>
+        <div class="log-area" id="log-area"></div>
+      </div>
+
+      <div class="routes-panel">
+        <div class="routes-header">
+          <h3>Registered Routes</h3>
+          <span class="route-count">5 endpoints</span>
+        </div>
+        <div class="route-row">
+          <span class="method GET">GET</span>
+          <span class="route-path">/</span>
+          <span class="route-desc">Root — health check</span>
+          <span class="route-status ok">200 OK</span>
+        </div>
+        <div class="route-row">
+          <span class="method GET">GET</span>
+          <span class="route-path">/ai</span>
+          <span class="route-desc">List all Creations</span>
+          <span class="route-status ok">200 OK</span>
+        </div>
+        <div class="route-row">
+          <span class="method POST">POST</span>
+          <span class="route-path">/ai/write-article</span>
+          <span class="route-desc">Create new article</span>
+          <span class="route-status ok">201 OK</span>
+        </div>
+        <div class="route-row">
+          <span class="method POST">POST</span>
+          <span class="route-path">/ai/blog-titles</span>
+          <span class="route-desc">Create blog titles</span>
+          <span class="route-status ok">201 OK</span>
+        </div>
+        <div class="route-row">
+          <span class="method DEL">DEL</span>
+          <span class="route-path">/ai/remove-background</span>
+          <span class="route-desc">Remove background from image</span>
+          <span class="route-status ok">201 OK</span>
+        </div>
+      </div>
+
+      <div class="ping-bar">
+        <div class="ping-card">
+          <div class="ping-icon green">⚡</div>
+          <div class="ping-info">
+            <div class="name">RESPONSE TIME</div>
+            <div class="val" id="ping-resp">12 ms</div>
+          </div>
+        </div>
+        <div class="ping-card">
+          <div class="ping-icon blue">🔗</div>
+          <div class="ping-info">
+            <div class="name">CONNECTIONS</div>
+            <div class="val" id="ping-conn">1</div>
+          </div>
+        </div>
+        <div class="ping-card">
+          <div class="ping-icon amber">📦</div>
+          <div class="ping-info">
+            <div class="name">REQUESTS SERVED</div>
+            <div class="val" id="ping-req">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        Built with Node.js · Express · <a href="#">Jonas Schmedtmann Course</a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const logArea = document.getElementById('log-area');
+    const logs = [
+      { delay: 300, level: 'INFO', msg: 'Initializing <span class="hl">Express</span> application…' },
+      { delay: 700, level: 'INFO', msg: 'Loading middleware — <span class="hl">morgan</span>, <span class="hl">multer</span>, <span class="hl">axios</span>' },
+      { delay: 1100, level: 'INFO', msg: 'Connecting to database at <span class="url">DATABASE_URL</span>' },
+      { delay: 1600, level: 'SUCCESS', msg: '✓ Database connection <span class="hl">established</span>' },
+      { delay: 2000, level: 'INFO', msg: 'Registering <span class="hl">5</span> route handlers' },
+      { delay: 2400, level: 'SUCCESS', msg: '✓ Server is listening on port <span class="port">3000</span>' },
+      { delay: 2800, level: 'INFO', msg: '<span class="url">http://localhost:3000</span> — ready to accept requests' },
+    ];
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function nowStr() { const d = new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }
+
+    function appendLog(log) {
+      const line = document.createElement('div');
+      line.className = 'log-line';
+      const lvlClass = log.level === 'SUCCESS' ? 'success' : 'info';
+      line.innerHTML = `<span class="log-time">${nowStr()}</span><span class="log-level ${lvlClass}">INFO</span><span class="log-msg">${log.msg}</span>`;
+      logArea.appendChild(line);
+      logArea.scrollTop = logArea.scrollHeight;
+    }
+
+    logs.forEach(log => setTimeout(() => appendLog(log), log.delay));
+
+    setTimeout(() => {
+      const line = document.createElement('div');
+      line.className = 'log-line';
+      line.innerHTML = `<span class="log-time">${nowStr()}</span><span class="log-level info">INFO</span><span class="log-msg"><span class="cursor"></span></span>`;
+      logArea.appendChild(line);
+      logArea.scrollTop = logArea.scrollHeight;
+    }, 3200);
+
+    let seconds = 0;
+    const uptimeEl = document.getElementById('uptime-text');
+    setInterval(() => {
+      seconds++;
+      if (seconds < 60) uptimeEl.textContent = seconds + 's';
+      else if (seconds < 3600) uptimeEl.textContent = Math.floor(seconds / 60) + 'm ' + (seconds % 60) + 's';
+      else uptimeEl.textContent = Math.floor(seconds / 3600) + 'h ' + Math.floor((seconds % 3600) / 60) + 'm';
+    }, 1000);
+
+    let reqCount = 0;
+    setInterval(() => {
+      if (Math.random() > 0.5) { reqCount++; document.getElementById('ping-req').textContent = reqCount; }
+      document.getElementById('ping-resp').textContent = (Math.floor(Math.random() * 18) + 4) + ' ms';
+      document.getElementById('ping-conn').textContent = Math.floor(Math.random() * 3) + 1;
+    }, 2500);
+  </script>
+</body>
+
+</html>
