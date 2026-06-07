@@ -42,7 +42,11 @@ export const generateArticle = async (req, res) => {
       // max_tokens: length,
       max_output_tokens: maxTokens,
     });
-
+    console.log({
+      prompt,
+      length,
+      type: typeof length,
+    });
     const content = response.choices[0].message.content;
 
     await sql`INSERT INTO creations (user_id, prompt, content,type) VALUES (${userId}, ${prompt},${content}, 'article')`;
@@ -57,6 +61,9 @@ export const generateArticle = async (req, res) => {
 
     res.json({ success: true, content });
   } catch (error) {
+    console.log("STATUS:", error.status);
+    console.log("MESSAGE:", error.message);
+    console.log("FULL:", error.response?.data);
     console.log(error.message);
     res.json({ success: false, message: error.message });
   }
