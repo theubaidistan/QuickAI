@@ -29,7 +29,7 @@ export const generateArticle = async (req, res) => {
     const response = await AI.chat.completions.create({
       // model: "gemini-2.0-flash",
 
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash", // or gemini-2.5-flash-lite
       messages: [
         {
           role: "user",
@@ -75,7 +75,7 @@ export const generateBlogTitle = async (req, res) => {
 
     const response = await AI.chat.completions.create({
       // model: "gemini-2.0-flash",
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash", // or gemini-2.5-flash-lite
       messages: [
         {
           role: "user",
@@ -237,7 +237,7 @@ export const resumeReview = async (req, res) => {
 
     const response = await AI.chat.completions.create({
       // model: "gemini-2.0-flash",
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash", // or gemini-2.5-flash-lite
       messages: [
         {
           role: "user",
