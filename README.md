@@ -162,7 +162,7 @@ npm run dev
 
 ## 📚 Course Credit
 
-Built as part of a full-stack JavaScript learning journey following **Jonas Schmedtmann's** courses on [Udemy](https://www.udemy.com/).
+Built as part of a full-stack JavaScript learning journey following **Jonas Schmedtmann's** courses on [Udemy](https://www.udemy.com/course/the-ultimate-react-course/?couponCode=KEEPLEARNING).
 
 ---
 
