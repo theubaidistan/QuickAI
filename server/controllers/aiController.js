@@ -28,7 +28,8 @@ export const generateArticle = async (req, res) => {
 
     const response = await AI.chat.completions.create({
       // model: "gemini-2.0-flash",
-      model: "gemini-3.5-flash",
+
+      model: "gemini-1.5-flash",
       messages: [
         {
           role: "user",
@@ -73,7 +74,8 @@ export const generateBlogTitle = async (req, res) => {
     }
 
     const response = await AI.chat.completions.create({
-      model: "gemini-2.0-flash",
+      // model: "gemini-2.0-flash",
+      model: "gemini-1.5-flash",
       messages: [
         {
           role: "user",
@@ -234,7 +236,8 @@ export const resumeReview = async (req, res) => {
     improvement. Resume Content:\n\n${pdfData.text}`;
 
     const response = await AI.chat.completions.create({
-      model: "gemini-2.0-flash",
+      // model: "gemini-2.0-flash",
+      model: "gemini-1.5-flash",
       messages: [
         {
           role: "user",
