@@ -27,7 +27,7 @@ const WriteArticle = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      const prompt = `WWrite an article about ${input} in ${setselectedLength.text}`;
+      const prompt = `Write an article about ${input} in ${selectedLength.text}`;
 
       const { data } = await axios.post(
         "/api/ai/generate-article",

@@ -16,7 +16,7 @@ import TermsModal from "./components/TermsModal";
 const App = () => {
   return (
     <div>
-      <TermsModal />
+      {/* <TermsModal /> */}
       <Toaster />
 
       <Routes>
