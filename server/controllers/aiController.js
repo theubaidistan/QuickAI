@@ -26,6 +26,8 @@ export const generateArticle = async (req, res) => {
       });
     }
 
+    const maxTokens = Number(length) || 1000;
+
     const response = await AI.chat.completions.create({
       // model: "gemini-2.0-flash",
 
@@ -38,7 +40,7 @@ export const generateArticle = async (req, res) => {
       ],
       temperature: 0.7,
       // max_tokens: length,
-      max_output_tokens: Number(length) || 1000,
+      max_output_tokens: maxTokens,
     });
 
     const content = response.choices[0].message.content;
