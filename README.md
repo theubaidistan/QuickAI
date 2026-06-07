@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://i.ytimg.com/vi/RkYIWg5XAnI/mqdefault.jpg" alt="Quick.AI Banner" width="720" />
+  <img src="./server/public/project.jpg" alt="Quick.AI Banner" width="720" />
 </p>
 
 <h1 align="center">Quick.AI</h1>
